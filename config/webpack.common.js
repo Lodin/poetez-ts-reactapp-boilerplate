@@ -1,3 +1,4 @@
+const path = require('path');
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const webpack = require('webpack');
 const paths = require('./paths');
@@ -92,16 +93,9 @@ module.exports = {
         },
       },
 
-      // Compile .tsx?
-      {
-        test: /\.(ts|tsx)$/,
-        include: paths.appSrc,
-        loader: require.resolve('ts-loader')
-      },
-
       // ** STOP ** Are you adding a new loader?
       // Remember to add the new extension(s) to the "url" loader exclusion list.
-    ]
+    ],
   },
   plugins: [
     // Moment.js is an extremely popular library that bundles large locale files
