@@ -215,5 +215,6 @@ module.exports = {
       // Don't precache sourcemaps (they're large) and build asset manifest:
       staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
     }),
+    new webpack.optimize.ModuleConcatenationPlugin(),
   ],
 };
