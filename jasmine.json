@@ -1,0 +1,11 @@
+{
+  "spec_dir": "src",
+  "spec_files": [
+    "**/*.spec.+(ts|tsx)"
+  ],
+  "helpers": [
+    "../config/test/prepare.js",
+    "../config/test/reporters.js",
+    "../config/test/parser.js"
+  ]
+}

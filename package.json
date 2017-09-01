@@ -3,17 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom"
+    "lint": "npm-run-all --parallel lint:*",
+    "lint:src": "tslint \"src/**/*.+(ts|tsx)\" --type-check -c tslint.json -t verbose",
+    "lint:spec": "tslint \"spec/**/*.+(ts|tsx)\" --type-check -c tslint.json -t verbose",
+    "start": "node scripts/start.js",
+    "test": "nodemon --watch src --watch spec -e ts --exec \"run-s test:single\"",
+    "test:single": "jasmine --config=jasmine.json",
+    "test:cover": "nyc run-s test:single"
   },
   "dependencies": {
     "object-assign": "^4.1.1",
     "promise": "8.0.1",
     "react": "next",
-    "react-dom": "next"
+    "react-dom": "next",
+    "tslib": ">=1.7.0"
   },
   "devDependencies": {
+    "@types/enzyme": "^2.8.6",
     "@types/react": "^16.0.5",
     "@types/react-dom": "^15.5.4",
     "app-root-path": "^2.0.1",
@@ -23,10 +30,12 @@
     "cli-highlight": "1.1.4",
     "css-loader": "0.28.7",
     "dotenv": "4.0.0",
+    "enzyme": "^2.9.1",
     "extract-text-webpack-plugin": "3.0.0",
     "file-loader": "0.11.2",
     "fs-extra": "4.0.1",
     "html-webpack-plugin": "2.30.1",
+    "npm-run-all": "^4.1.1",
     "postcss-flexbugs-fixes": "3.2.0",
     "postcss-loader": "2.0.6",
     "react-dev-utils": "^4.0.0",
@@ -36,6 +45,7 @@
     "sw-precache-webpack-plugin": "0.11.4",
     "ts-loader": "^2.3.4",
     "tslint": "^5.7.0",
+    "tslint-config-poetez": "^0.2.1",
     "tslint-loader": "^3.5.3",
     "tslint-react": "^3.2.0",
     "typescript": "~2.5.2",
