@@ -9,7 +9,8 @@ const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
-const common = require('./webpack.common');
+const postcssConfig = require('./postcss');
+const commonConfig = require('./webpack.common');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -24,7 +25,8 @@ const env = getClientEnvironment(publicUrl);
 // This is the development configuration.
 // It is focused on developer experience and fast rebuilds.
 // The production configuration is different and lives in a separate file.
-module.exports = Object.assign({}, common, {
+module.exports = {
+  ...commonConfig,
   // You may want 'eval' instead if you prefer to see the compiled output in DevTools.
   // See the discussion in https://github.com/facebookincubator/create-react-app/issues/343.
   devtool: 'cheap-module-source-map',
@@ -48,12 +50,13 @@ module.exports = Object.assign({}, common, {
     // Errors should be considered fatal in development
     require.resolve('react-error-overlay'),
     // Finally, this is your app's code:
-    ...common.entry
+    ...commonConfig.entry,
     // We include the app code last so that if there is a runtime error during
     // initialization, it doesn't blow up the WebpackDevServer client, and
     // changing JS code would still trigger a refresh.
   ],
-  output: Object.assign({}, common.output, {
+  output: {
+    ...commonConfig.output,
     // Add /* filename */ comments to generated require()s in the output.
     pathinfo: true,
     // This does not produce a real file. It's just the virtual path that is
@@ -64,45 +67,20 @@ module.exports = Object.assign({}, common, {
     chunkFilename: 'static/js/[name].chunk.js',
     // This is the URL that app is served from. We use "/" in development.
     publicPath: publicPath,
-    // Point sourcemap entries to original disk location
+    // Point sourcemap entries to original disk location (format as URL on Windows)
     devtoolModuleFilenameTemplate: info =>
-      path.resolve(info.absoluteResourcePath),
-  }),
-  module: Object.assign({}, common.module, {
+      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+  },
+  module: {
+    strictExportPresence: true,
     rules: [
-      ...common.module.rules,
+      ...commonConfig.module.rules,
       // ** ADDING/UPDATING LOADERS **
       // The "file" loader handles all assets unless explicitly excluded.
       // The `exclude` list *must* be updated with every change to loader extensions.
       // When adding a new loader, you must add its `test`
       // as a new entry in the `exclude` list for "file" loader.
 
-      // "file" loader makes sure those assets get served by WebpackDevServer.
-      // When you `import` an asset, you get its (virtual) filename.
-      // In production, they would get copied to the `build` folder.
-      {
-        exclude: [
-          /\.html$/,
-          // We have to write /\.(js|jsx)(\?.*)?$/ rather than just /\.(js|jsx)$/
-          // because you might change the hot reloading server from the custom one
-          // to Webpack's built-in webpack-dev-server/client?/, which would not
-          // get properly excluded by /\.(js|jsx)$/ because of the query string.
-          // Webpack 2 fixes this, but for now we include this hack.
-          // https://github.com/facebookincubator/create-react-app/issues/1713
-          /\.(js|jsx)(\?.*)?$/,
-          /\.(ts|tsx)(\?.*)?$/,
-          /\.css$/,
-          /\.json$/,
-          /\.bmp$/,
-          /\.gif$/,
-          /\.jpe?g$/,
-          /\.png$/,
-        ],
-        loader: require.resolve('file-loader'),
-        options: {
-          name: 'static/media/[name].[hash:8].[ext]',
-        },
-      },
       // "postcss" loader applies autoprefixer to our CSS.
       // "css" loader resolves paths in CSS and adds assets as dependencies.
       // "style" loader turns CSS into JS modules that inject <style> tags.
@@ -121,19 +99,10 @@ module.exports = Object.assign({}, common, {
           {
             loader: require.resolve('postcss-loader'),
             options: {
-              ident: 'postcss', // https://webpack.js.org/guides/migrating/#complex-options
-              plugins: () => [
-                require('postcss-flexbugs-fixes'),
-                autoprefixer({
-                  browsers: [
-                    '>1%',
-                    'last 4 versions',
-                    'Firefox ESR',
-                    'not ie < 9', // React doesn't support IE8 anyway
-                  ],
-                  flexbox: 'no-2009',
-                }),
-              ],
+              // Necessary for external CSS imports to work
+              // https://github.com/facebookincubator/create-react-app/issues/2677
+              ident: 'postcss',
+              plugins: postcssConfig,
             },
           },
         ],
@@ -141,8 +110,9 @@ module.exports = Object.assign({}, common, {
       // ** STOP ** Are you adding a new loader?
       // Remember to add the new extension(s) to the "url" loader exclusion list.
     ],
-  }),
+  },
   plugins: [
+    ...commonConfig.plugins,
     // Makes some environment variables available in index.html.
     // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
     // <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
@@ -153,6 +123,8 @@ module.exports = Object.assign({}, common, {
       inject: true,
       template: paths.appHtml,
     }),
+    // Add module names to factory functions so they appear in browser profiler.
+    new webpack.NamedModulesPlugin(),
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === 'development') { ... }. See `./env.js`.
     new webpack.DefinePlugin(env.stringified),
@@ -167,7 +139,6 @@ module.exports = Object.assign({}, common, {
     // makes the discovery automatic so you don't have to restart.
     // See https://github.com/facebookincubator/create-react-app/issues/186
     new WatchMissingNodeModulesPlugin(paths.appNodeModules),
-    ...common.plugins,
   ],
   // Turn off performance hints during development because we don't do any
   // splitting or minification in interest of speed. These warnings become
@@ -175,4 +146,4 @@ module.exports = Object.assign({}, common, {
   performance: {
     hints: false,
   },
-});
+};
