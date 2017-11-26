@@ -1,5 +1,3 @@
-'use strict';
-
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
@@ -11,15 +9,15 @@ const resolveApp = relativePath => path.resolve(appDirectory, relativePath);
 
 const envPublicUrl = process.env.PUBLIC_URL;
 
-function ensureSlash(path, needsSlash) {
-  const hasSlash = path.endsWith('/');
+function ensureSlash(way, needsSlash) {
+  const hasSlash = way.endsWith('/');
   if (hasSlash && !needsSlash) {
-    return path.substr(path, path.length - 1);
+    return way.substr(way, way.length - 1);
   } else if (!hasSlash && needsSlash) {
-    return `${path}/`;
-  } else {
-    return path;
+    return `${way}/`;
   }
+
+  return way;
 }
 
 const getPublicUrl = appPackageJson =>
@@ -33,8 +31,8 @@ const getPublicUrl = appPackageJson =>
 // like /todos/42/static/js/bundle.7289d.js. We have to know the root.
 function getServedPath(appPackageJson) {
   const publicUrl = getPublicUrl(appPackageJson);
-  const servedUrl = envPublicUrl ||
-    (publicUrl ? url.parse(publicUrl).pathname : '/');
+  const servedUrl =
+    envPublicUrl || (publicUrl ? url.parse(publicUrl).pathname : '/');
   return ensureSlash(servedUrl, true);
 }
 
@@ -50,6 +48,7 @@ module.exports = {
   yarnLockFile: resolveApp('yarn.lock'),
   testsSetup: resolveApp('src/setupTests.ts'),
   appNodeModules: resolveApp('node_modules'),
+  appTsConfig: resolveApp('tsconfig.json'),
   publicUrl: getPublicUrl(resolveApp('package.json')),
   servedPath: getServedPath(resolveApp('package.json')),
 };
