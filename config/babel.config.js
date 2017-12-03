@@ -11,6 +11,8 @@ module.exports = {
           'last 2 Chrome versions',
         ],
       },
+      loose: true,
+      modules: false,
     }],
     '@babel/preset-react',
     '@babel/preset-typescript',
